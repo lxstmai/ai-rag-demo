@@ -20,7 +20,7 @@ from utils.config import (
 )
 
 # model initialization
-print("🔄 Загружаем модели...")
+print("🔄 Loading models...")
 try:
     from sentence_transformers import SentenceTransformer
     import chromadb
@@ -55,15 +55,15 @@ try:
     llm_available = True
     print("✅ LLM client initialized")
 except Exception as e:
-    print(f"⚠️ LLM недоступен: {e}")
+    print(f"⚠️ LLM is unavailable: {e}")
     llm_client = None
     rag_pipeline = None
     llm_available = False
 
-# HTML шаблон для веб-интерфейса
+# HTML template for the web interface
 HTML_TEMPLATE = """
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -88,28 +88,28 @@ HTML_TEMPLATE = """
 </head>
 <body>
     <h1>🤖 AI RAG System Demo</h1>
-    <p>Демонстрация системы RAG (Retrieval-Augmented Generation) для создания AI-ассистентов</p>
+    <p>Demonstration of a RAG (Retrieval-Augmented Generation) system for creating AI assistants</p>
     
     <div class="container">
         <div class="section">
             <h2>📄 Website Indexing</h2>
             <input type="url" id="websiteUrl" placeholder="https://example.com" />
-            <input type="number" id="maxPages" placeholder="Максимум страниц (по умолчанию: 10)" value="10" />
-            <button onclick="indexWebsite()">Индексировать сайт</button>
+            <input type="number" id="maxPages" placeholder="Maximum pages (default: 10)" value="10" />
+            <button onclick="indexWebsite()">Index Website</button>
             <div id="indexResult"></div>
         </div>
         
         <div class="section">
             <h2>🔍 Search and Answer</h2>
-            <textarea id="query" placeholder="Ваш вопрос..." rows="3"></textarea>
-            <button onclick="askQuestion()" id="askBtn">Задать вопрос</button>
+            <textarea id="query" placeholder="Your question..." rows="3"></textarea>
+            <button onclick="askQuestion()" id="askBtn">Ask Question</button>
             <div id="queryResult"></div>
         </div>
     </div>
     
     <div class="section">
         <h2>📊 System Statistics</h2>
-        <button onclick="getStats()">Обновить статистику</button>
+        <button onclick="getStats()">Refresh Statistics</button>
         <div id="statsResult"></div>
     </div>
 
@@ -120,7 +120,7 @@ HTML_TEMPLATE = """
             const resultDiv = document.getElementById('indexResult');
             
             if (!url) {
-                resultDiv.innerHTML = '<div class="result error">Введите URL сайта</div>';
+                resultDiv.innerHTML = '<div class="result error">Please enter a website URL</div>';
                 return;
             }
             
@@ -139,8 +139,8 @@ HTML_TEMPLATE = """
                     resultDiv.innerHTML = `
                         <div class="result success">
                             ✅ Indexing completed!<br>
-                            Проиндексировано: ${data.indexed_count}/${data.total_urls} страниц<br>
-                            ${data.errors.length > 0 ? 'Ошибки: ' + data.errors.length : ''}
+                            Indexed: ${data.indexed_count}/${data.total_urls} pages<br>
+                            ${data.errors.length > 0 ? 'Errors: ' + data.errors.length : ''}
                         </div>
                     `;
                 } else {
@@ -157,12 +157,12 @@ HTML_TEMPLATE = """
             const askBtn = document.getElementById('askBtn');
             
             if (!query) {
-                resultDiv.innerHTML = '<div class="result error">Введите вопрос</div>';
+                resultDiv.innerHTML = '<div class="result error">Please enter a question</div>';
                 return;
             }
             
             askBtn.disabled = true;
-            askBtn.textContent = 'Обрабатываем...';
+            askBtn.textContent = 'Processing...';
             resultDiv.innerHTML = '<div class="result loading">🔄 Searching for answer...</div>';
             
             try {
@@ -177,16 +177,16 @@ HTML_TEMPLATE = """
                 if (data.success) {
                     let sourcesHtml = '';
                     if (data.sources && data.sources.length > 0) {
-                        sourcesHtml = `<div class="source"><strong>Источники:</strong><br>${data.sources.map(s => `<a href="${s}" target="_blank">${s}</a>`).join('<br>')}</div>`;
+                        sourcesHtml = `<div class="source"><strong>Sources:</strong><br>${data.sources.map(s => `<a href="${s}" target="_blank">${s}</a>`).join('<br>')}</div>`;
                     }
                     
                     let chunksHtml = '';
                     if (data.chunks && data.chunks.length > 0) {
-                        chunksHtml = '<div class="source"><strong>Найденные фрагменты:</strong></div>';
+                        chunksHtml = '<div class="source"><strong>Found Fragments:</strong></div>';
                         data.chunks.forEach(chunk => {
                             chunksHtml += `
                                 <div class="chunk">
-                                    <div class="similarity">Схожесть: ${(chunk.similarity * 100).toFixed(1)}%</div>
+                                    <div class="similarity">Similarity: ${(chunk.similarity * 100).toFixed(1)}%</div>
                                     <div>${chunk.text.substring(0, 200)}...</div>
                                 </div>
                             `;
@@ -196,7 +196,7 @@ HTML_TEMPLATE = """
                     resultDiv.innerHTML = `
                         <div class="result success">
                             <strong>Answer:</strong><br>
-                            ${data.answer}<br>
+                            ${data.answer.replace(/\\n/g, '<br>')}<br>
                             ${sourcesHtml}
                             ${chunksHtml}
                         </div>
@@ -208,13 +208,13 @@ HTML_TEMPLATE = """
                 resultDiv.innerHTML = `<div class="result error">❌ Error: ${error.message}</div>`;
             } finally {
                 askBtn.disabled = false;
-                askBtn.textContent = 'Задать вопрос';
+                askBtn.textContent = 'Ask Question';
             }
         }
         
         async function getStats() {
             const resultDiv = document.getElementById('statsResult');
-            resultDiv.innerHTML = '<div class="result loading">🔄 Загружаем статистику...</div>';
+            resultDiv.innerHTML = '<div class="result loading">🔄 Loading statistics...</div>';
             
             try {
                 const response = await fetch('/api/stats');
@@ -223,9 +223,9 @@ HTML_TEMPLATE = """
                 resultDiv.innerHTML = `
                     <div class="result success">
                         <strong>System Statistics:</strong><br>
-                        📄 Всего документов: ${data.total_documents}<br>
-                        �� Проиндексированных URL: ${data.indexed_urls}<br>
-                        🤖 LLM доступен: ${data.llm_available ? '✅ Да' : '❌ Нет'}<br>
+                        📄 Total documents: ${data.total_documents}<br>
+                        🌐 Indexed URLs: ${data.indexed_urls}<br>
+                        🤖 LLM available: ${data.llm_available ? '✅ Yes' : '❌ No'}<br>
                         📚 Collection: ${data.collection_name}
                     </div>
                 `;
@@ -234,7 +234,7 @@ HTML_TEMPLATE = """
             }
         }
         
-        // Загружаем статистику при загрузке страницы
+        // Load statistics when the page loads
         window.onload = getStats;
     </script>
 </body>
@@ -243,19 +243,19 @@ HTML_TEMPLATE = """
 
 @app.route('/')
 def index():
-    """Главная страница с веб-интерфейсом"""
+    """Main page with the web interface"""
     return render_template_string(HTML_TEMPLATE)
 
 @app.route('/api/index', methods=['POST'])
 def api_index():
-    """API для индексации веб-сайта"""
+    """API for website indexing"""
     try:
         data = request.get_json()
         url = data.get('url')
         max_pages = data.get('max_pages', 10)
         
         if not url:
-            return jsonify({"error": "URL не указан"}), 400
+            return jsonify({"error": "URL not specified"}), 400
         
         result = indexer.index_website(url, max_pages)
         return jsonify(result)
@@ -274,10 +274,10 @@ def api_query():
             return jsonify({"error": "Query not specified"}), 400
         
         if not llm_available:
-            # If LLM unavailable, return only search results
+            # If LLM is unavailable, return only search results
             context_result = retriever.find_relevant_context(query)
             return jsonify({
-                "answer": "LLM недоступен. Вот найденная информация:",
+                "answer": "LLM is unavailable. Here is the information I found:",
                 "context": context_result.get("context", ""),
                 "sources": context_result.get("sources", []),
                 "chunks": context_result.get("chunks", []),
@@ -295,7 +295,7 @@ def api_query():
 
 @app.route('/api/stats', methods=['GET'])
 def api_stats():
-    """API для получения статистики системы"""
+    """API for getting system statistics"""
     try:
         collection_info = retriever.get_collection_info()
         
@@ -328,13 +328,14 @@ def api_search():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    print(f"🚀 Запускаем сервер на {FLASK_HOST}:{FLASK_PORT}")
-    print(f"🌐 Откройте браузер: http://localhost:{FLASK_PORT}")
+    print(f"🚀 Starting server on {FLASK_HOST}:{FLASK_PORT}")
+    print(f"🌐 Open your browser at: http://localhost:{FLASK_PORT}")
     print(f"📚 Embedding model: {EMBEDDING_MODEL}")
-    print(f"🤖 LLM доступен: {'✅ Да' if llm_available else '❌ Нет'}")
+    print(f"🤖 LLM available: {'✅ Yes' if llm_available else '❌ No'}")
     
     app.run(
         host=FLASK_HOST,
         port=FLASK_PORT,
         debug=FLASK_DEBUG
     )
+    
