@@ -7,7 +7,7 @@ from typing import List
 
 def clean_text(text: str) -> str:
     """
-    Очищает текст от лишних символов и форматирования
+    Cleans text of extra characters and formatting
     """
     if not text:
         return ""
@@ -23,7 +23,7 @@ def clean_text(text: str) -> str:
 
 def chunk_text(text: str, chunk_size: int = 300, overlap: int = 50) -> List[str]:
     """
-    Разбивает текст на чанки с перекрытием
+    Splits text into chunks with overlap
     """
     if not text:
         return []
@@ -50,7 +50,7 @@ def chunk_text(text: str, chunk_size: int = 300, overlap: int = 50) -> List[str]
 
 def extract_title_from_html(html_content: str) -> str:
     """
-    Извлекает заголовок из HTML контента
+    Extracts the title from HTML content
     """
     try:
         from bs4 import BeautifulSoup
@@ -61,12 +61,12 @@ def extract_title_from_html(html_content: str) -> str:
     except Exception:
         pass
     
-    return "Без заголовка"
+    return "No Title"
 
 
 def extract_text_from_html(html_content: str) -> str:
     """
-    Извлекает чистый текст из HTML контента
+    Extracts clean text from HTML content
     """
     try:
         from bs4 import BeautifulSoup
@@ -85,14 +85,15 @@ def extract_text_from_html(html_content: str) -> str:
 
 def is_valid_url(url: str) -> bool:
     """
-    Проверяет валидность URL
+    Checks if a URL is valid
     """
     import re
     pattern = re.compile(
-        r'^https?://'  # http:// или https://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # домен
+        r'^https?://'  # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain
         r'localhost|'  # localhost
         r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # IP
-        r'(?::\d+)?'  # порт
+        r'(?::\d+)?'  # port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
     return pattern.match(url) is not None
+    
