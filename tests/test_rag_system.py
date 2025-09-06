@@ -1,11 +1,11 @@
 """
-Тесты для RAG системы
+Tests for the RAG system
 """
 import pytest
 import sys
 import os
 
-# Добавляем путь к модулям
+# Add the path to the modules
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from core.indexer import WebsiteIndexer
@@ -14,45 +14,45 @@ from core.llm_client import LLMClient, RAGPipeline
 from utils.text_processing import clean_text, chunk_text, is_valid_url
 
 class TestTextProcessing:
-    """Тесты для обработки текста"""
+    """Tests for text processing"""
     
     def test_clean_text(self):
-        """Тест очистки текста"""
-        dirty_text = "  Это   тестовый    текст  \n\n  с лишними   пробелами  "
+        """Test text cleaning"""
+        dirty_text = "  This   is a test    text  \n\n  with extra   spaces  "
         clean = clean_text(dirty_text)
-        assert clean == "Это тестовый текст с лишними пробелами"
+        assert clean == "This is a test text with extra spaces"
     
     def test_chunk_text(self):
-        """Тест разбивки текста на чанки"""
-        text = " ".join(["слово"] * 100)  # 100 слов
+        """Test splitting text into chunks"""
+        text = " ".join(["word"] * 100)  # 100 words
         chunks = chunk_text(text, chunk_size=20, overlap=5)
         
         assert len(chunks) > 1
         assert all(len(chunk.split()) <= 20 for chunk in chunks)
     
     def test_is_valid_url(self):
-        """Тест валидации URL"""
+        """Test URL validation"""
         assert is_valid_url("https://example.com") == True
         assert is_valid_url("http://localhost:8080") == True
         assert is_valid_url("invalid-url") == False
         assert is_valid_url("") == False
 
 class TestRAGComponents:
-    """Тесты для компонентов RAG системы"""
+    """Tests for RAG system components"""
     
     @pytest.fixture
     def mock_embedding_model(self):
-        """Мок модель эмбеддингов"""
+        """Mock embedding model"""
         class MockModel:
             def encode(self, texts, normalize_embeddings=True):
                 import numpy as np
-                # Возвращаем случайные эмбеддинги
+                # Return random embeddings
                 return np.random.rand(len(texts), 384)
         return MockModel()
     
     @pytest.fixture
     def mock_chroma_collection(self):
-        """Мок ChromaDB коллекция"""
+        """Mock ChromaDB collection"""
         class MockCollection:
             def __init__(self):
                 self.data = []
@@ -68,9 +68,9 @@ class TestRAGComponents:
                     })
             
             def query(self, query_embeddings, n_results, include):
-                # Возвращаем мок результаты
+                # Return mock results
                 return {
-                    'documents': [['Тестовый документ 1', 'Тестовый документ 2']],
+                    'documents': [['Test document 1', 'Test document 2']],
                     'metadatas': [[{'url': 'https://test.com'}, {'url': 'https://test2.com'}]],
                     'distances': [[0.1, 0.2]]
                 }
@@ -87,10 +87,10 @@ class TestRAGComponents:
         return MockCollection()
     
     def test_context_retriever(self, mock_embedding_model, mock_chroma_collection):
-        """Тест поиска контекста"""
+        """Test context retrieval"""
         retriever = ContextRetriever(mock_embedding_model, mock_chroma_collection)
         
-        result = retriever.find_relevant_context("тестовый запрос")
+        result = retriever.find_relevant_context("test query")
         
         assert 'context' in result
         assert 'chunks' in result
@@ -98,40 +98,41 @@ class TestRAGComponents:
         assert result['total_found'] == 2
     
     def test_rag_pipeline(self, mock_embedding_model, mock_chroma_collection):
-        """Тест RAG пайплайна"""
+        """Test RAG pipeline"""
         retriever = ContextRetriever(mock_embedding_model, mock_chroma_collection)
         
-        # Мок LLM клиент
+        # Mock LLM client
         class MockLLMClient:
             def generate_answer(self, query, context, max_tokens=1024):
-                return "Тестовый ответ", "Тестовый промпт"
+                return "Test answer", "Test prompt"
         
         llm_client = MockLLMClient()
         pipeline = RAGPipeline(retriever, llm_client)
         
-        result = pipeline.ask("тестовый вопрос")
+        result = pipeline.ask("test question")
         
         assert result['success'] == True
-        assert result['answer'] == "Тестовый ответ"
+        assert result['answer'] == "Test answer"
         assert 'sources' in result
 
 class TestIntegration:
-    """Интеграционные тесты"""
+    """Integration tests"""
     
     def test_system_initialization(self):
-        """Тест инициализации системы"""
-        # Проверяем, что модули импортируются без ошибок
+        """Test system initialization"""
+        # Check that modules are imported without errors
         from utils.config import EMBEDDING_MODEL, CHROMA_DB_PATH
         assert EMBEDDING_MODEL is not None
         assert CHROMA_DB_PATH is not None
     
     def test_web_app_import(self):
-        """Тест импорта веб-приложения"""
+        """Test web application import"""
         try:
             from web.app import app
             assert app is not None
         except ImportError as e:
-            pytest.skip(f"Веб-приложение недоступно: {e}")
+            pytest.skip(f"Web application is unavailable: {e}")
 
 if __name__ == "__main__":
     pytest.main([__file__])
+    
