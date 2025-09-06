@@ -2,7 +2,7 @@
 
 ## 🎯 Project Goal
 
-Creating a demonstration version of a RAG (Retrieval-Augmented Generation) system to showcase AI/ML technology skills for job applications.
+Creating a demonstration version of a RAG (Retrieval-Augmented Generation) system to showcase AI/ML technology skills.
 
 ## 📋 What's Implemented
 
