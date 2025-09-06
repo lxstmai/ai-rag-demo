@@ -10,7 +10,7 @@ A demonstration project of a RAG (Retrieval-Augmented Generation) system for cre
 - **🌐 Web Interface**: Intuitive API and web interface for interaction
 - **📊 Monitoring**: System statistics and search quality
 
-## ��️ Architecture
+## 🏗️ Architecture
 
 ```
 src/
