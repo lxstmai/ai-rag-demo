@@ -30,19 +30,19 @@ def check_env_file():
     return True
 
 def main():
-    """Основная функция"""
+    """Main function"""
     print("🚀 Starting RAG Demo")
     print("=" * 50)
     
-    # Проверяем зависимости
+    # Check dependencies
     if not check_requirements():
         return 1
     
-    # Проверяем .env файл
+    # Check .env file
     env_ok = check_env_file()
     if not env_ok:
-        print("\nДля полной функциональности настройте .env файл")
-        print("Система будет работать в ограниченном режиме")
+        print("\nFor full functionality, configure the .env file")
+        print("The system will run in limited mode")
     
     print("\n🌐 Starting web server...")
     print("Open browser: http://localhost:5000")
@@ -50,12 +50,13 @@ def main():
     print("=" * 50)
     
     try:
-        # Запускаем Flask приложение
+        # Run the Flask application
         sys.path.append('src')
         from web.app import app
-        app.run(host='0.0.0.0', port=5000, debug=True)
+        # Use debug=False for a more production-like start, or keep True for development
+        app.run(host='0.0.0.0', port=5000, debug=True) 
     except KeyboardInterrupt:
-        print("\n👋 Сервер остановлен")
+        print("\n👋 Server stopped")
         return 0
     except Exception as e:
         print(f"❌ Startup error: {e}")
@@ -63,3 +64,4 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+    
