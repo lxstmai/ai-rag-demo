@@ -1,5 +1,5 @@
 """
-Поиск релевантного контекста для RAG системы
+Retrieving relevant context for a RAG system
 """
 from typing import List, Dict, Any
 from utils.config import TOP_K_RESULTS
@@ -7,7 +7,7 @@ from utils.config import TOP_K_RESULTS
 
 class ContextRetriever:
     """
-    Класс для поиска релевантного контекста по запросу
+    Class for retrieving relevant context for a query
     """
     
     def __init__(self, embedding_model, chroma_collection):
@@ -16,28 +16,28 @@ class ContextRetriever:
     
     def find_relevant_context(self, query: str, top_k: int = None) -> Dict[str, Any]:
         """
-        Находит релевантный контекст для запроса
+        Finds relevant context for a query
         
         Args:
-            query: Поисковый запрос
-            top_k: Количество результатов для возврата
+            query: The search query
+            top_k: The number of results to return
             
         Returns:
-            dict: Релевантный контекст и метаданные
+            dict: Relevant context and metadata
         """
         if not query or not query.strip():
             return {
                 "context": "",
                 "chunks": [],
                 "sources": [],
-                "error": "Пустой запрос"
+                "error": "Empty query"
             }
         
         if top_k is None:
             top_k = TOP_K_RESULTS
         
         try:
-            # Create embedding for query
+            # Create embedding for the query
             query_embedding = self.embedding_model.encode(
                 [query], 
                 normalize_embeddings=True
@@ -74,10 +74,10 @@ class ContextRetriever:
                 if 'url' in metadata:
                     sources.add(metadata['url'])
             
-            # Form context for LLM
+            # Form context for the LLM
             context_parts = []
             for chunk in chunks:
-                title = chunk['metadata'].get('title', 'Без заголовка')
+                title = chunk['metadata'].get('title', 'No Title')
                 text = chunk['text']
                 context_parts.append(f"[{title}]\n{text}")
             
@@ -101,52 +101,52 @@ class ContextRetriever:
     
     def search_by_keywords(self, keywords: List[str], top_k: int = None) -> Dict[str, Any]:
         """
-        Поиск по ключевым словам
+        Search by keywords
         
         Args:
-            keywords: Список ключевых слов
-            top_k: Количество результатов
+            keywords: A list of keywords
+            top_k: The number of results
             
         Returns:
-            dict: Результаты поиска
+            dict: The search results
         """
         if not keywords:
-            return {"error": "Не указаны ключевые слова"}
+            return {"error": "No keywords provided"}
         
-        # Combine keywords into query
+        # Combine keywords into a query
         query = " ".join(keywords)
         return self.find_relevant_context(query, top_k)
     
     def get_similar_documents(self, document_id: str, top_k: int = 5) -> Dict[str, Any]:
         """
-        Находит документы, похожие на указанный
+        Finds documents similar to a specified one
         
         Args:
-            document_id: ID документа
-            top_k: Количество похожих документов
+            document_id: The ID of the document
+            top_k: The number of similar documents to return
             
         Returns:
-            dict: Похожие документы
+            dict: Similar documents
         """
         try:
-            # Get document by ID
+            # Get the document by ID
             results = self.chroma_collection.get(
                 ids=[document_id],
                 include=['documents', 'embeddings', 'metadatas']
             )
             
             if not results['documents']:
-                return {"error": "Документ не найден"}
+                return {"error": "Document not found"}
             
             # Search for similar documents
             similar_results = self.chroma_collection.query(
                 query_embeddings=results['embeddings'],
-                n_results=top_k + 1,  # +1 потому что сам документ тоже будет в результатах
+                n_results=top_k + 1,  # +1 because the document itself will also be in the results
                 include=['documents', 'metadatas', 'distances']
             )
             
-            # Filter original document
-            documents = similar_results['documents'][0][1:]  # Skip first (original)
+            # Filter out the original document
+            documents = similar_results['documents'][0][1:]  # Skip the first (original)
             metadatas = similar_results['metadatas'][0][1:]
             distances = similar_results['distances'][0][1:]
             
@@ -165,11 +165,11 @@ class ContextRetriever:
             }
             
         except Exception as e:
-            return {"error": f"Error searching similar documents: {str(e)}"}
+            return {"error": f"Error searching for similar documents: {str(e)}"}
     
     def get_collection_info(self) -> Dict[str, Any]:
         """
-        Возвращает информацию о коллекции
+        Returns information about the collection
         """
         try:
             count = self.chroma_collection.count()
@@ -188,9 +188,10 @@ class ContextRetriever:
             
             return {
                 "total_documents": count,
-                "sample_urls": sample_urls,
+                "sample_urls": list(set(sample_urls)),
                 "collection_name": self.chroma_collection.name
             }
             
         except Exception as e:
             return {"error": f"Error getting information: {str(e)}"}
+            
