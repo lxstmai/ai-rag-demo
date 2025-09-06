@@ -23,22 +23,22 @@ class LLMClient:
             self.api_key = OPENAI_API_KEY
             self.api_url = "https://api.openai.com/v1/chat/completions"
         else:
-            raise ValueError(f"Неподдерживаемый провайдер: {provider}")
+            raise ValueError(f"Unsupported provider: {provider}")
         
         if not self.api_key:
-            raise ValueError(f"API ключ для {self.provider} не установлен")
+            raise ValueError(f"API key for {self.provider} is not set")
     
     def generate_answer(self, query: str, context: str, max_tokens: int = 1024) -> Tuple[str, str]:
         """
-        Генерирует ответ на основе запроса и контекста
+        Generates an answer based on the query and context
         
         Args:
-            query: Пользовательский запрос
-            context: Релевантный контекст
-            max_tokens: Максимальное количество токенов в ответе
+            query: The user's query
+            context: Relevant context
+            max_tokens: The maximum number of tokens in the response
             
         Returns:
-            tuple: (ответ, полный промпт)
+            tuple: (answer, full prompt)
         """
         system_prompt = self._get_system_prompt()
         user_prompt = self._format_user_prompt(query, context)
@@ -52,35 +52,35 @@ class LLMClient:
     
     def _get_system_prompt(self) -> str:
         """
-        Возвращает системный промпт
+        Returns the system prompt
         """
         return (
-            "Ты — полезный AI-ассистент, который отвечает на вопросы пользователей "
-            "на основе предоставленного контекста.\n\n"
-            "Правила:\n"
-            "1. Отвечай ТОЛЬКО на основе предоставленного контекста\n"
-            "2. Если в контексте нет информации для ответа, честно скажи об этом\n"
-            "3. Будь вежливым и дружелюбным\n"
-            "4. Структурируй ответ, если это уместно\n"
-            "5. Не придумывай информацию, которой нет в контексте"
+            "You are a helpful AI assistant that answers user questions "
+            "based on the provided context.\n\n"
+            "Rules:\n"
+            "1. Answer ONLY based on the provided context\n"
+            "2. If the context does not contain information to answer, honestly say so\n"
+            "3. Be polite and friendly\n"
+            "4. Structure the answer if appropriate\n"
+            "5. Do not invent information that is not in the context"
         )
     
     def _format_user_prompt(self, query: str, context: str) -> str:
         """
-        Форматирует пользовательский промпт
+        Formats the user prompt
         """
-        return f"""Контекст:
+        return f"""Context:
 ---
 {context}
 ---
 
-Вопрос: {query}
+Question: {query}
 
-Пожалуйста, ответь на вопрос, используя только информацию из предоставленного контекста."""
+Please answer the question using only the information from the provided context."""
     
     def _make_api_request(self, system_prompt: str, user_prompt: str, max_tokens: int) -> str:
         """
-        Выполняет запрос к API
+        Executes a request to the API
         """
         headers = {
             "Content-Type": "application/json",
@@ -126,15 +126,15 @@ class LLMClient:
             if "choices" in response_json and response_json["choices"]:
                 return response_json["choices"][0]["message"]["content"]
         
-        return "Извините, не удалось получить ответ от AI."
+        return "Sorry, failed to get a response from the AI."
     
     def test_connection(self) -> bool:
         """
-        Тестирует подключение к API
+        Tests the connection to the API
         """
         try:
-            test_prompt = "Привет! Это тестовое сообщение."
-            response, _ = self.generate_answer(test_prompt, "Тестовый контекст", 50)
+            test_prompt = "Hello! This is a test message."
+            response, _ = self.generate_answer(test_prompt, "Test context", 50)
             return "error" not in response.lower()
         except Exception:
             return False
@@ -142,7 +142,7 @@ class LLMClient:
 
 class RAGPipeline:
     """
-    Полный пайплайн RAG: поиск контекста + генерация ответа
+    Full RAG pipeline: context retrieval + answer generation
     """
     
     def __init__(self, retriever, llm_client):
@@ -151,16 +151,16 @@ class RAGPipeline:
     
     def ask(self, query: str, top_k: int = None) -> dict:
         """
-        Выполняет полный цикл RAG: поиск + генерация
+        Executes the full RAG cycle: retrieval + generation
         
         Args:
-            query: Пользовательский запрос
-            top_k: Количество релевантных чанков для поиска
+            query: The user's query
+            top_k: The number of relevant chunks to retrieve
             
         Returns:
-            dict: Результат с ответом и метаданными
+            dict: A result with the answer and metadata
         """
-        # 1. Поиск релевантного контекста
+        # 1. Retrieve relevant context
         context_result = self.retriever.find_relevant_context(query, top_k)
         
         if context_result.get("error"):
@@ -174,14 +174,14 @@ class RAGPipeline:
         
         if not context_result.get("context"):
             return {
-                "answer": "Извините, не удалось найти релевантную информацию для ответа на ваш вопрос.",
+                "answer": "Sorry, I could not find relevant information to answer your question.",
                 "context": "",
                 "sources": context_result.get("sources", []),
                 "chunks": context_result.get("chunks", []),
                 "success": False
             }
         
-        # 2. Генерация ответа
+        # 2. Generate the answer
         answer, full_prompt = self.llm_client.generate_answer(
             query, 
             context_result["context"]
@@ -196,3 +196,4 @@ class RAGPipeline:
             "success": True,
             "query": query
         }
+        
